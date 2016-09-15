@@ -8,6 +8,14 @@ for a comprehensive idea of the general process.
 import numpy as np
 import scipy as sc
 
+class axon:
+    """Basic axon definition
+    which carries the value and the gradient
+    """
+    def __init__(self, value, gradient):
+        self.value    = value
+        self.gradient = gradient
+
 class neuronSum:
     """Basic neuron for the sum
     Arguments:
@@ -16,13 +24,17 @@ class neuronSum:
     Returns:
         The sum of two arguments a and b
     """
-    
-    def __init__(a, b):
-        self.a = a
-        self.b = b
-    def Sum(self):
-        return self.a + self.b
-
+    def __init__(self, a, b):
+        self.a   = axon(a, 0.)
+        self.b   = axon(b, 0.)
+    def forwardSum(self):
+        self.Sum = axon(self.a.value + self.b.value, 0.) 
+    def backwardProp(self):
+        """Chain rule the local gradient with the output gradient
+        """
+        self.a.gradient = self.a.gradient + 1. * self.Sum.gradient
+        self.b.gradient = self.b.gradient + 1. * self.Sum.gradient
+        
 class neuronMul:
     """Basic neuron for the multiplication
     Arguments:
@@ -31,12 +43,25 @@ class neuronMul:
     Returns:
         The product of two arguments a and b
     """
+    def __init__(self, a, b):
+        self.a   = axon(a, 0.)
+        self.b   = axon(b, 0.)
+    def forwardProd(self):
+        self.Sum = axon(self.a.value * self.b.value, 0.) 
+    def backwardProp(self):
+        """Chain rule the local gradient with the output gradient
+        """
+        self.a.gradient = self.a.gradient + self.b.value * self.Sum.gradient
+        self.b.gradient = self.b.gradient + self.a.value * self.Sum.gradient
     
-    #~ def __init__(self, a, b):
-        #~ self.a = a
-        #~ self.b = b
-    def Prod(self, a, b):
-        return a * b
+class forwardCircuit:
+    """Basic circuit composition of a sum and product neuron
+    """
+    def __init__(self):
+        self.neuronSum1 = neuronSum()
+        self.neuronMul1 = neuronMul()
+    def circuit(self, a, b, c):
+        return self.neuronMul1.Prod(self.neuronSum1.Sum(a, b), c)
 
 def main():
     """Main method
@@ -45,22 +70,35 @@ def main():
     """
     
     # Initial Forward pass
-    a    = -2
-    b    = 3
+    x    = -2
+    y    = 5
+    z    = -4
     step = 0.01
     
-    aGradient = b
-    bGradient = a
+    xGradient = -4
+    yGradient = -4
+    zGradient = 3
+
+    n1 = neuronSum(x, y)
+    n1.forwardSum()
+    print n1.Sum.value
+    n1.a.value = 2.
+    n1.b.value = 2.
+    n1.forwardSum()
+    print n1.a.value
+    print n1.b.value
+    print n1.Sum.value
     
-    neuronMul1 = neuronMul()
-    output1    = neuronMul1.Prod(a,b)
+    #~ circuit1 = forwardCircuit()
+    #~ print circuit1.circuit(x, y, z)
     
     # Backward pass
-    a = a + aGradient * step
-    b = b + bGradient * step
+    #~ x = x + xGradient * step
+    #~ y = y + yGradient * step
+    #~ z = z + zGradient * step
     
-    output2    = neuronMul1.Prod(a,b)
-    print output2
+    #~ print circuit1.circuit(x, y, z)
+    
     
 # Launch main method if this file is being executed directly
 if __name__ == "__main__":
