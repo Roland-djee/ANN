@@ -47,12 +47,34 @@ class neuronMul:
         self.a   = axon(a, 0.)
         self.b   = axon(b, 0.)
     def forwardProd(self):
-        self.Sum = axon(self.a.value * self.b.value, 0.) 
+        self.Sum = axon(self.a.value * self.b.value, 0.)    
     def backwardProp(self):
         """Chain rule the local gradient with the output gradient
         """
         self.a.gradient = self.a.gradient + self.b.value * self.Sum.gradient
         self.b.gradient = self.b.gradient + self.a.value * self.Sum.gradient
+
+def sigmoid(x):
+    """Definition of the sigmoid function
+    """
+    return 1. / (1. + exp(-x))
+
+class neuronSigmoid:
+    """Basic neuron for the sigmoid function
+    Arguments:
+        a (float)
+    Returns:
+        1 / (1 + exp(-x))
+    """
+    def __init__(self, a):
+        self.a = axon(a, 0.)
+    def forwardSig(self):
+        self.Sig = axon(sigmoid(self.a.value), 0.)
+    def backwardProp(self):
+        """Chain rule the local gradient with the output gradient
+        """
+        s = self.Sig.value
+        self.a.gradient = self.a.gradient + (s * (1 - s)) * self.Sig.gradient
     
 class forwardCircuit:
     """Basic circuit composition of a sum and product neuron
@@ -70,24 +92,32 @@ def main():
     """
     
     # Initial Forward pass
-    x    = -2
-    y    = 5
-    z    = -4
-    step = 0.01
-    
-    xGradient = -4
-    yGradient = -4
-    zGradient = 3
+    a    = axon(1., 0.)
+    b    = axon(2., 0.)
+    c    = axon(-3., 0.)
 
-    n1 = neuronSum(x, y)
-    n1.forwardSum()
-    print n1.Sum.value
-    n1.a.value = 2.
-    n1.b.value = 2.
-    n1.forwardSum()
-    print n1.a.value
-    print n1.b.value
-    print n1.Sum.value
+    x    = axon(-1., 0.)
+    y    = axon(3., 0.)
+    
+    nS1 = 
+    
+    
+    #~ z    = -4
+    #~ step = 0.01
+    
+    #~ xGradient = -4
+    #~ yGradient = -4
+    #~ zGradient = 3
+
+    #~ n1 = neuronSum(x, y)
+    #~ n1.forwardSum()
+    #~ print n1.Sum.value
+    #~ n1.a.value = 2.
+    #~ n1.b.value = 2.
+    #~ n1.forwardSum()
+    #~ print n1.a.value
+    #~ print n1.b.value
+    #~ print n1.Sum.value
     
     #~ circuit1 = forwardCircuit()
     #~ print circuit1.circuit(x, y, z)
