@@ -5,6 +5,7 @@ for a comprehensive idea of the general process.
 @todo: Document code
 """
 
+from math import *
 import numpy as np
 import scipy as sc
 
@@ -24,11 +25,14 @@ class neuronSum:
     Returns:
         The sum of two arguments a and b
     """
-    def __init__(self, a, b):
-        self.a   = axon(a, 0.)
-        self.b   = axon(b, 0.)
-    def forwardSum(self):
-        self.Sum = axon(self.a.value + self.b.value, 0.) 
+    #~ def __init__(self, a, b):
+        #~ self.a   = axon(a, 0.)
+        #~ self.b   = axon(b, 0.)
+    def forwardSum(self, a, b):
+        self.a   = a
+        self.b   = b
+        self.Sum = axon(self.a.value + self.b.value, 0.)
+        return  self.Sum
     def backwardProp(self):
         """Chain rule the local gradient with the output gradient
         """
@@ -43,16 +47,19 @@ class neuronMul:
     Returns:
         The product of two arguments a and b
     """
-    def __init__(self, a, b):
-        self.a   = axon(a, 0.)
-        self.b   = axon(b, 0.)
-    def forwardProd(self):
-        self.Sum = axon(self.a.value * self.b.value, 0.)    
+    #~ def __init__(self, a, b):
+        #~ self.a   = axon(a, 0.)
+        #~ self.b   = axon(b, 0.)
+    def forwardProd(self, a, b):
+        self.a    = a
+        self.b    = b
+        self.Prod = axon(self.a.value * self.b.value, 0.)
+        return self.Prod
     def backwardProp(self):
         """Chain rule the local gradient with the output gradient
         """
-        self.a.gradient = self.a.gradient + self.b.value * self.Sum.gradient
-        self.b.gradient = self.b.gradient + self.a.value * self.Sum.gradient
+        self.a.gradient = self.a.gradient + self.b.value * self.Prod.gradient
+        self.b.gradient = self.b.gradient + self.a.value * self.Prod.gradient
 
 def sigmoid(x):
     """Definition of the sigmoid function
@@ -66,15 +73,17 @@ class neuronSigmoid:
     Returns:
         1 / (1 + exp(-x))
     """
-    def __init__(self, a):
-        self.a = axon(a, 0.)
-    def forwardSig(self):
+    #~ def __init__(self, a):
+        #~ self.a = axon(a, 0.)
+    def forwardSig(self, a):
+        self.a   = a
         self.Sig = axon(sigmoid(self.a.value), 0.)
+        return self.Sig
     def backwardProp(self):
         """Chain rule the local gradient with the output gradient
         """
         s = self.Sig.value
-        self.a.gradient = self.a.gradient + (s * (1 - s)) * self.Sig.gradient
+        self.a.gradient = self.a.gradient + (s * (1. - s)) * self.Sig.gradient
     
 class forwardCircuit:
     """Basic circuit composition of a sum and product neuron
@@ -99,7 +108,75 @@ def main():
     x    = axon(-1., 0.)
     y    = axon(3., 0.)
     
-    nS1 = 
+    nS1 = neuronSum()
+    nS2 = neuronSum()
+    nP1 = neuronMul()
+    nP2 = neuronMul()
+    
+    nSig1 = neuronSigmoid()
+    
+    ax = nP1.forwardProd(a, x)
+    by = nP2.forwardProd(b, y)
+    
+    axpby  = nS1.forwardSum(ax, by)
+    axpbpc = nS2.forwardSum(axpby, c)     
+    
+    s = nSig1.forwardSig(axpbpc)
+    
+    print s.value
+    
+    
+    # Backward propagation
+    
+    s.gradient = 1.
+    
+    nSig1.backwardProp()
+    nS2.backwardProp()
+    nS1.backwardProp()
+    nP2.backwardProp()
+    nP1.backwardProp()
+    
+    # Second forward pass
+    
+    step = 0.01
+    
+    print a.gradient
+    print b.gradient
+    print c.gradient
+    print x.gradient
+    print y.gradient
+    
+    a.value = a.value + step * a.gradient
+    b.value = b.value + step * b.gradient
+    c.value = c.value + step * c.gradient
+    x.value = x.value + step * x.gradient
+    y.value = y.value + step * y.gradient
+    
+    
+    ax = nP1.forwardProd(a, x)
+    by = nP2.forwardProd(b, y)
+    
+    axpby  = nS1.forwardSum(ax, by)
+    axpbpc = nS2.forwardSum(axpby, c)     
+    
+    s = nSig1.forwardSig(axpbpc)
+    
+    print s.value
+    
+    
+    #~ print s.gradient
+
+    #~ print nS2.a.value
+    #~ print nS2.b.value
+    #~ print nS2.a.gradient
+    #~ print nS2.b.gradient
+
+    
+    
+    
+    
+    #~ print nS2.a.gradient
+    #~ print nS2.b.gradient
     
     
     #~ z    = -4
